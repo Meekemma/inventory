@@ -8,6 +8,10 @@ from django.views.decorators.csrf import csrf_exempt
 from django.contrib.auth import get_user_model
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework_simplejwt.views import TokenObtainPairView
+from rest_framework_simplejwt.exceptions import InvalidToken
+from rest_framework_simplejwt.tokens import RefreshToken
+from rest_framework_simplejwt.token_blacklist.models import OutstandingToken, BlacklistedToken
+from django.utils.timezone import now
 
 
 User = get_user_model()
@@ -74,18 +78,26 @@ class MyTokenObtainPairView(TokenObtainPairView):
 
 
 
-from rest_framework.decorators import api_view
-from rest_framework.response import Response
-from rest_framework import status
-from .utils import blacklist_token
 
 @api_view(['POST'])
 def logout_view(request):
-    token = request.data.get('token')
-    if not token:
-        return Response({"error": "Token is required for logout."}, status=status.HTTP_400_BAD_REQUEST)
+    refresh_token = request.data.get('refresh')  # Get the refresh token from the request body
+    if not refresh_token:
+        return Response({"detail": "Refresh token is required."}, status=400)
 
-    response, code = blacklist_token(token)
-    return Response(response, status=code)
+    try:
+        # Decode the refresh token
+        token = RefreshToken(refresh_token)
 
+        # Fetch the corresponding OutstandingToken instance
+        outstanding_token = OutstandingToken.objects.get(jti=token['jti'])
+
+        # Blacklist the token by creating a BlacklistedToken entry
+        BlacklistedToken.objects.create(token=outstanding_token, blacklisted_at=now())
+
+        return Response({"detail": "Successfully logged out."}, status=200)
+    except OutstandingToken.DoesNotExist:
+        return Response({"detail": "Token does not exist or is already blacklisted."}, status=404)
+    except InvalidToken:
+        return Response({"detail": "Invalid token."}, status=401)
 
