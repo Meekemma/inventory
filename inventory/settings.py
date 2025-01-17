@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     #APPS
     'base.apps.BaseConfig',
     'inventory_management.apps.InventoryManagementConfig',
+    'order.apps.OrderConfig',
 
     #JWT
     'rest_framework_simplejwt',
