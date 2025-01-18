@@ -12,7 +12,7 @@ def test_product_view(api_client, user, product):
 
     response = api_client.get(url)
     assert response.status_code == status.HTTP_200_OK
-    assert 'results' in response.data  # Ensure pagination works and results key exists
+    assert 'results' in response.data 
     assert len(response.data['results']) > 0  # There should be at least one product
 
 

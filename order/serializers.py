@@ -46,12 +46,20 @@ class OrderSerializer(serializers.ModelSerializer):
         )
 
         if created:
-            order.save()  # Ensure the order is saved and has a primary key
+            order.save()  
 
         # Handle order items
         for item_data in order_items_data:
             product = item_data['product']
             quantity = item_data['quantity']
+
+
+             # Validate stock availability
+            if product.quantity < quantity:
+                raise serializers.ValidationError({
+                    "order_items": f"Not enough stock for {product.name}."
+                })
+            
 
             # Use get_or_create to avoid duplicating items for the same product
             order_item, item_created = OrderItem.objects.get_or_create(order=order, product=product)
