@@ -13,6 +13,9 @@ ADMIN_GROUP = 'Admin'
 
 @receiver(post_save, sender=User)
 def user_grouping(sender, instance, created, *args, **kwargs):
+    """
+    Automatically assign users to default groups upon creation.
+    """
     if created:
         try:
             # Ensure the necessary groups are created
@@ -26,5 +29,4 @@ def user_grouping(sender, instance, created, *args, **kwargs):
             if instance.is_staff and instance.is_superuser:
                 instance.groups.add(admin_group)
         except Exception as e:
-            # Log any errors
             print(f"Error in user grouping: {e}")

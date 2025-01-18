@@ -1,5 +1,6 @@
 from rest_framework.decorators import api_view, permission_classes
-from rest_framework.permissions import AllowAny, IsAuthenticated, IsAdminUser
+from rest_framework.permissions import IsAuthenticated, IsAdminUser
+from .permissions import IsUser
 from rest_framework.response import Response
 from rest_framework.pagination import LimitOffsetPagination
 from rest_framework import status
@@ -9,7 +10,7 @@ from .serializers import ProductSerializer
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated, IsUser])
 def product_view(request):
     """
     List all products with pagination.
@@ -22,7 +23,7 @@ def product_view(request):
 
 
 @api_view(['GET'])
-@permission_classes([AllowAny])
+@permission_classes([IsAuthenticated, IsUser])
 def product_detail(request, pk):
     """
     Retrieve a single product by ID.
