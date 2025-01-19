@@ -2,7 +2,7 @@
 
 ## Overview
 
-The **Inventory Management System** is a web application built with **Django** and **Django REST Framework**. This system provides user authentication, inventory management, order tracking, and reporting functionalities for both admins and regular users. Admins can manage products, orders, and view reports, while regular users can create orders and view available products.
+The **Inventory Management System** is a **RESTFUL API** built with **Django** and **Django REST Framework**. This system provides user authentication, inventory management, order tracking, and reporting functionalities for both admins and regular users. Admins can manage products, orders, and view reports, while regular users can create orders and view available products.
 
 ## Features
 
@@ -86,7 +86,7 @@ Run the development server to view the application:
 python manage.py runserver
 ```
 
-Now, you can access the application at `http://127.0.0.1:8000/`.
+Now, you can access the application at `http://127.0.0.1:8000/admin/`.
 
 ## API Endpoints
 

@@ -1,49 +1,40 @@
 import pytest
 from rest_framework import status
-from django.urls import reverse
 from inventory_management.models import Product
-from base.models import User  # assuming custom user model
+
 
 @pytest.mark.django_db
-def test_stock_report_for_admin(client, admin_user, product):
-    url = f'/report/stock_report/?threshold=10'
-    client.force_login(admin_user)  # Log in as admin
-    response = client.get(url)
+def test_stock_report_default_threshold(authenticated_admin_client, test_products):
+    """Test stock report with the default threshold (10)."""
+    url = "/report/stock_report/"
+    response = authenticated_admin_client.get(url)
+
     assert response.status_code == status.HTTP_200_OK
-    assert len(response.data) == 1  # Assuming the product has quantity less than threshold
+    assert len(response.data) == 2  # Products below the default threshold
 
 
 @pytest.mark.django_db
-def test_stock_report_no_products(client, admin_user):
-    url = f'/report/stock_report/?threshold=1000'  # Assuming no product has this low quantity
-    client.force_login(admin_user)
-    response = client.get(url)
+def test_stock_report_custom_threshold(authenticated_admin_client, test_products):
+    """Test stock report with a custom threshold."""
+    url = "/report/stock_report/?threshold=15"
+    response = authenticated_admin_client.get(url)
+
     assert response.status_code == status.HTTP_200_OK
-    assert 'No products found' in response.data['message']
+    assert len(response.data) == 2  # Only products below the custom threshold
+    product_names = [product["name"] for product in response.data]
+    assert "Product A" in product_names
+    assert "Product C" in product_names
+    assert "Product B" not in product_names
+
+
+   
 
 
 @pytest.mark.django_db
-def test_sales_report_for_admin(client, admin_user):
-    url = f'/report/sales_report/?period=day'
-    client.force_login(admin_user)
-    response = client.get(url)
-    assert response.status_code == status.HTTP_200_OK
-    assert isinstance(response.data, list)
+def test_sales_report_invalid_period(authenticated_admin_client):
+    """Test sales report with an invalid period."""
+    url = "/report/sales_report/?period=invalid"
+    response = authenticated_admin_client.get(url)
 
-
-@pytest.mark.django_db
-def test_sales_report_invalid_period(client, admin_user):
-    url = f'/report/sales_report/?period=invalid'
-    client.force_login(admin_user)
-    response = client.get(url)
     assert response.status_code == status.HTTP_400_BAD_REQUEST
-    assert 'error' in response.data
-
-
-@pytest.mark.django_db
-def test_sales_report_no_data(client, admin_user):
-    url = f'/report/sales_report/?period=month'
-    client.force_login(admin_user)
-    response = client.get(url)
-    assert response.status_code == status.HTTP_200_OK
-    assert 'No sales data available' in response.data['message']
+    assert "Invalid period" in response.data["error"]

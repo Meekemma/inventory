@@ -9,10 +9,13 @@ User = get_user_model()
 
 @pytest.fixture
 def api_client():
+    """Fixture to provide an unauthenticated API client."""
     return APIClient()
 
+
 @pytest.fixture
-def admin_user():
+def admin_user(db):
+    """Fixture to create an admin user."""
     return User.objects.create_superuser(
         email="admin@example.com",
         first_name="Admin",
@@ -20,20 +23,28 @@ def admin_user():
         password="adminpass123"
     )
 
-@pytest.fixture
-def normal_user():
-    return User.objects.create_user(
-        email="user@example.com",
-        first_name="User",
-        last_name="Normal",
-        password="userpass123"
-    )
 
 @pytest.fixture
-def product():
-    return Product.objects.create(
-        name="Test Product",
-        description="This is a test product.",
-        quantity=20,
-        price=100.0
-    )
+def authenticated_admin_client(admin_user):
+    """Fixture to provide an authenticated API client for the admin user."""
+    client = APIClient()
+    client.force_authenticate(user=admin_user)
+    return client
+
+
+@pytest.fixture
+def product_factory(db):
+    """Fixture to create multiple products for testing."""
+    def create_products(**kwargs):
+        return Product.objects.create(**kwargs)
+    return create_products
+
+
+@pytest.fixture
+def test_products(product_factory):
+    """Fixture to create a batch of test products."""
+    return Product.objects.bulk_create([
+        Product(name="Product A", description="Low stock product", quantity=5, price=50.00),
+        Product(name="Product B", description="In stock product", quantity=15, price=150.00),
+        Product(name="Product C", description="Medium stock product", quantity=8, price=80.00),
+    ])

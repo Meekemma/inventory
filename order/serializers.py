@@ -16,6 +16,11 @@ class OrderItemSerializer(serializers.ModelSerializer):
         fields = ('id', 'product', 'product_name', 'product_description', 'product_price', 'quantity', 'date_added')
         read_only_fields = ('id', 'date_added')
 
+
+
+
+
+
 class OrderSerializer(serializers.ModelSerializer):
     order_items = OrderItemSerializer(many=True, source='orderitem_set')
     total_price = serializers.SerializerMethodField()
